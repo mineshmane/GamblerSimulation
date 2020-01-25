@@ -32,29 +32,48 @@ do
 			#return $finalStake
 		fi
 	done
-	totalAmount=$(( $finalStake - $INITIAL_STAKE ))
-   echo $totalAmount
-	totalGamblerAmount=$(( $totalGamblerAmount + $totalAmount ))	
-gamblerAmount[$dayCount]=$totalAmount
-		echo $totalGamblerAmount
+
+		dailyAmount=$(( $finalStake - $INITIAL_STAKE ))
+		finalDailyAmount=$(( $finalDailyAmount + $dailyAmount ))
+		gamblerAmount[$dayCount]=$dailyAmount
+		gamblerSimulator[$dayCount]=$finalDailyAmount
+		totalGamblerAmount=$(( $totalGamblerAmount + $dailyAmount ))
 done
 	echo "leavefor the day"
+	
 	for data in "${!gamblerAmount[@]}"
 	do
 		if [[ ${gamblerAmount[$data]} -lt $LOSS ]]
 		then
 			lossCount=$(( $lossCount + 1 ))
-			lossTotalAmount=$(( $lossTotalAmount + ${gamblerAmount[$data]} ))
-			
+			lossdailyAmount=$(( $lossdailyAmount + ${gamblerAmount[$data]} ))
 		else
 			winCount=$(( $winCount + 1 ));
-			winTotalAmount=$(( $winTotalAmount + ${gamblerAmount[$data]} ))
+			windailyAmount=$(( $windailyAmount + ${gamblerAmount[$data]} ))
 
 		fi
 
+
 	done
-		echo "loss Count:" $lossCount  "lossAmount:" $lossTotalAmount
-		echo "win count :" $winCount "winAmount:"  $winTotalAmount
+		luckiestValue=$( printf "%s\n" ${gamblerSimulator[@]} | sort -nr | head -1 )
+		unluckiestValue=$( printf "%s\n" ${gamblerSimulator[@]} | sort -nr | tail -1 )
+		echo "loss Count:" $lossCount  "lossAmount:" $lossdailyAmount
+		echo "win count :" $winCount "winAmount:"  $windailyAmount
+		findDayOfLuckyAndUnlucky $luckiestValue $unluckiestValue 
+
+}
+
+function findDayOfLuckyAndUnlucky(){
+		for data in "${!gamblerSimulator[@]}"
+	do
+		if [[ ${gamblerSimulator[$data]} -eq $1 ]]
+		then
+			echo "lucky Day" $data
+		elif [[ ${gamblerSimulator[$data]} -eq $2 ]]
+		then
+			echo "unlucky Day" $data
+		fi
+	done
 }
 
 gamblerSimulator $(($WIN))
